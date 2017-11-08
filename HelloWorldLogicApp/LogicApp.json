@@ -52,23 +52,13 @@
       "type": "string",
       "defaultValue": "JDuckmantonMSFT"
     },
-    "office365_1_Connection_Name": {
+    "onedrive_1_Connection_Name": {
       "type": "string",
-      "defaultValue": "office365"
+      "defaultValue": "onedrive"
     },
-    "office365_1_Connection_DisplayName": {
+    "onedrive_1_Connection_DisplayName": {
       "type": "string",
-      "defaultValue": "joduckma@microsoft.com"
-    },
-    "targetEmailAddress": {
-      "type": "string",
-      "minLength": 1,
-      "defaultValue": "john.duckmanton@microsoft.com"
-    },
-    "twitterHashTag": {
-      "type": "string",
-      "minLength": 1,
-      "defaultValue": "#LogicAppDemo"
+      "defaultValue": "johnduckmanton@hotmail.com"
     }
   },
   "variables": {},
@@ -85,21 +75,21 @@
         "definition": {
           "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
           "actions": {
-            "Send_an_email": {
+            "Create_file": {
               "type": "ApiConnection",
               "inputs": {
                 "host": {
                   "connection": {
-                    "name": "@parameters('$connections')['office365']['connectionId']"
+                    "name": "@parameters('$connections')['onedrive']['connectionId']"
                   }
                 },
                 "method": "post",
-                "path": "/Mail",
-                "body": {
-                  "To": "@parameters('targetEmailAddress')",
-                  "Subject": "New Tweet with hashtag @{parameters('twitterHashTag')} from user @@{triggerBody()?['TweetedBy']}",
-                  "Body": "@triggerBody()?['TweetText']"
-                }
+                "path": "/datasets/default/files",
+                "queries": {
+                  "folderPath": "/demo/tweets",
+                  "name": "@{triggerBody()?['CreatedAtIso']}.txt"
+                },
+                "body": "Tweet created at @{triggerBody()?['CreatedAtIso']}\n by @{triggerBody()?['TweetedBy']}\n the text was \"@{triggerBody()?['TweetText']}\""
               },
               "runAfter": {}
             }
@@ -122,7 +112,7 @@
                 "method": "get",
                 "path": "/onnewtweet",
                 "queries": {
-                  "searchQuery": "@parameters('twitterHashTag')"
+                  "searchQuery": "#HelloWorldLogicAppDemo"
                 }
               },
               "recurrence": {
@@ -138,10 +128,10 @@
         "parameters": {
           "$connections": {
             "value": {
-              "office365": {
-                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'office365')]",
-                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('office365_1_Connection_Name'))]",
-                "connectionName": "[parameters('office365_1_Connection_Name')]"
+              "onedrive": {
+                "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'onedrive')]",
+                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('onedrive_1_Connection_Name'))]",
+                "connectionName": "[parameters('onedrive_1_Connection_Name')]"
               },
               "twitter": {
                 "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'twitter')]",
@@ -153,7 +143,7 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Web/connections', parameters('office365_1_Connection_Name'))]",
+        "[resourceId('Microsoft.Web/connections', parameters('onedrive_1_Connection_Name'))]",
         "[resourceId('Microsoft.Web/connections', parameters('twitter_1_Connection_Name'))]"
       ]
     },
@@ -172,13 +162,13 @@
     {
       "type": "MICROSOFT.WEB/CONNECTIONS",
       "apiVersion": "2016-06-01",
-      "name": "[parameters('office365_1_Connection_Name')]",
+      "name": "[parameters('onedrive_1_Connection_Name')]",
       "location": "[parameters('logicAppLocation')]",
       "properties": {
         "api": {
-          "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'office365')]"
+          "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', parameters('logicAppLocation'), '/managedApis/', 'onedrive')]"
         },
-        "displayName": "[parameters('office365_1_Connection_DisplayName')]"
+        "displayName": "[parameters('onedrive_1_Connection_DisplayName')]"
       }
     }
   ],
